@@ -1,0 +1,171 @@
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <script src="https://cdn.jsdelivr.net/npm/ractive"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="unoChecker.css">
+    <script src="unoChecker.js"></script> 
+    <title>"Uno Checker"</title>
+</head>
+<body>
+
+  <!-- html section -->
+  <div id="target"></div>
+  <script id="template" type="text/ractive">
+
+    <div class="content-section"> 
+        <div class = "dialog">
+
+                <div class="addCardArea">
+                <!-- Add a card to the table-->
+                <div class="form-group">
+                    <div class="form-inline">
+                        <select id="tableSelectColor" class="form-control col-md-6">
+                            <option value="red">Red</option>
+                            <option value="blue">Blue</option>
+                            <option value="yellow">Yellow</option>
+                            <option value="green">Green</option>
+                        </select>
+
+                        <select id="tableSelectNumber" class="form-control col-md-6">
+                                <option value="0">0</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                                <option value="6">6</option>
+                                <option value="7">7</option>
+                                <option value="8">8</option>
+                                <option value="9">9</option>
+                        </select>
+                    </div>
+
+                        <button onclick="addCardFunction('table', document.getElementById('tableSelectColor').value, document.getElementById('tableSelectNumber').value)" class="tableCardBackground">Set which card is on the table</button>
+                    </div>
+
+                <!-- Add a card to your hand-->
+                <div class="form-group">
+                    <div class="form-inline">
+                        <select id="selectColor" class="form-control col-md-6">
+                            <option value="red">Red</option>
+                            <option value="blue">Blue</option>
+                            <option value="yellow">Yellow</option>
+                            <option value="green">Green</option>
+                        </select>
+
+                        <select id="selectNumber" class="form-control col-md-6">
+                                <option value="0">0</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                                <option value="6">6</option>
+                                <option value="7">7</option>
+                                <option value="8">8</option>
+                                <option value="9">9</option>
+                        </select>
+                    </div>
+
+                        <button onclick="addCardFunction('hand', document.getElementById('selectColor').value, document.getElementById('selectNumber').value)" class="handCardBackground">Add a card to your hand</button>
+                    </div>
+            </div>
+
+            <!-- Results Area -->
+
+            <p>
+            <div>
+                <textarea id="result" class="form-control floating-element" placeholder="Result:" disabled></textarea>
+            
+            </div> 
+            <p>
+            
+            <div class="form-group">           
+    
+                <div class="displayCardArea tableCardBackground">
+                    <div><label>Card on the table:</label></div>
+                    {{#if cardOnTable}}
+                    {{>unoCardOnTable}}
+                    {{/if}}
+                </div>
+    
+                <div class="displayCardArea handCardBackground">
+                <div><label>Cards in your hand:</label></div>
+                    {{#each cardsInHand list: i}}
+                    {{>unoCardsInHand}}
+                    {{/each}}
+                </div>
+            </div>
+
+            <div>
+                    <button onclick="resetTable()" class="btn btn-info form-control floating-element">Reset</button>
+            </div>
+            <p>
+
+        </div>
+    </div>
+
+    <!-- Partial (HTML template) for Cards in hand-->
+    {{#partial unoCardsInHand}}
+        <div class="unoCard {{cardsInHand[i].cardColor}}">
+            {{cardsInHand[i].cardNumber}}
+        </div>
+    {{/partial}}
+
+    <!-- Partial (HTML template) for Card on the table-->
+    {{#partial unoCardOnTable}}
+        <div class="unoCard {{cardOnTable.cardColor}}">
+            {{cardOnTable.cardNumber}}
+        </div>
+    {{/partial}}
+
+    </script>
+
+<!-- Ractive/Javascript section (functions are stored in an external file)-->
+<script>
+
+/*------------------------------
+    Ractive Object
+------------------------------*/
+
+let ractive = new Ractive({
+    target: "#target",
+    template: "#template",
+    data: {
+        //cardOnTable: {"cardColor": "yellow", "cardNumber": 3},
+        cardOnTable: "",
+        //cardsInHand: [{"cardColor": "red", "cardNumber": 5}, {"cardColor": "red", "cardNumber": 2}, {"cardColor": "green", "cardNumber": 4}],
+        cardsInHand: []
+    }
+});
+
+function addCardFunction(tableOrHand,cardColor,cardNumber){
+    //console.log("Add Card to " + tableOrHand + ': ' + cardColor + " " + cardNumber);
+
+    if(tableOrHand == 'hand'){
+        ractive.push('cardsInHand',{"cardColor": cardColor, "cardNumber": cardNumber});
+    }
+    else if(tableOrHand == 'table'){
+        ractive.set('cardOnTable',{"cardColor": cardColor, "cardNumber": cardNumber});
+    }
+}
+
+function resetTable(){
+    ractive.set('cardsInHand', []);
+    ractive.set('cardOnTable', "");
+}
+
+//Check to see if you can play a card from your hand; Returns the answer to the screen
+ractive.observe('cardsInHand cardOnTable', () => {
+    const cardOnTable = ractive.get('cardOnTable');
+    const cardsInHand = ractive.get('cardsInHand');
+    const answer = canPlayCard(cardOnTable, cardsInHand);
+    document.getElementById('result').value = answer;
+})
+
+</script>
+
+</body>
+</html>
